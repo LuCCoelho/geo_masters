@@ -403,13 +403,28 @@ class _EndGameScreenState extends State<EndGameScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(
-                  widget.score.toString(),
-                  style: Theme.of(context).textTheme.bodyLarge,
+                Row(
+                  children: [
+                    Text(
+                      widget.score.toString(),
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    Icon(Icons.star, color: Colors.yellow),
+                  ],
                 ),
-                Text(
-                  widget.currentGameHighestStreak.toString(),
-                  style: Theme.of(context).textTheme.bodyLarge,
+                Row(
+                  children: [
+                    Text(
+                      widget.currentGameHighestStreak.toString(),
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    Icon(
+                      Icons.local_fire_department,
+                      color: getStreakIconColor(
+                        widget.currentGameHighestStreak,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
