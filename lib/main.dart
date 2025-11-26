@@ -308,7 +308,7 @@ class _GameScreenState extends State<GameScreen> {
                 ],
               ),
             ),
-            Image(image: NetworkImage(question.imageUrl)),
+            Image(image: NetworkImage(question.imageUrl), height: 200),
             Column(
               spacing: 10,
               children: [
@@ -506,11 +506,33 @@ class _EndGameScreenState extends State<EndGameScreen> {
   }
 }
 
+enum QuestionType {
+  flag(1),
+  shape(2);
+
+  final int value;
+  const QuestionType(this.value);
+
+  String get pathName {
+    switch (this) {
+      case QuestionType.flag:
+        return 'flags';
+      case QuestionType.shape:
+        return 'shape';
+    }
+  }
+}
+
 class Question {
+  QuestionType type;
   String imageUrl;
   Map<String, bool> alternatives;
 
-  Question({required this.imageUrl, required this.alternatives});
+  Question({
+    required this.imageUrl,
+    required this.alternatives,
+    required this.type,
+  });
 }
 
 Question createRandomQuestion() {
@@ -527,9 +549,15 @@ Question createRandomQuestion() {
   alternativesList.shuffle(Random());
   final shuffledAlternatives = Map<String, bool>.fromEntries(alternativesList);
 
+  // Randomly select between flag (1) and shape (2)
+  final questionType = Random().nextBool()
+      ? QuestionType.flag
+      : QuestionType.shape;
+
   return Question(
+    type: questionType,
     imageUrl:
-        '${dotenv.env['SUPABASE_IMAGES_BASE_URL']}/flags/${country['code'].toLowerCase()}.png',
+        '${dotenv.env['SUPABASE_IMAGES_BASE_URL']}/${questionType.pathName}/${country['code'].toLowerCase()}.png',
     alternatives: shuffledAlternatives,
   );
 }
