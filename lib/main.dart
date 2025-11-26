@@ -347,9 +347,12 @@ class _GameScreenState extends State<GameScreen> {
                       }
                       GameScreen.questionNumber++;
                     },
-                    child: Text(
-                      alternative.key,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        alternative.key,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                     ),
                   ),
                 ),
