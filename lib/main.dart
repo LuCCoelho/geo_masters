@@ -3,6 +3,7 @@ import 'theme.provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:math';
+import 'package:lottie/lottie.dart';
 
 //TODO: disable back button on end game screen
 
@@ -408,89 +409,99 @@ class _EndGameScreenState extends State<EndGameScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 40,
-          children: [
-            Text(
-              'Thank you for playing!',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      widget.score.toString(),
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    Icon(Icons.star, color: Colors.yellow),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text(
-                      widget.currentGameHighestStreak.toString(),
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    Icon(
-                      Icons.local_fire_department,
-                      color: getStreakIconColor(
-                        widget.currentGameHighestStreak,
+      body: _buildUI(),
+    );
+  }
+
+  Widget _buildUI() {
+    return Stack(
+      alignment: AlignmentDirectional.center,
+      children: [
+        Lottie.asset('assets/animations/confetti.json', repeat: false),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 40,
+            children: [
+              Text(
+                'Thank you for playing!',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        widget.score.toString(),
+                        style: Theme.of(context).textTheme.bodyLarge,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Column(
-              spacing: 20,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate to GameScreen
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => GameScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    fixedSize: Size(200, 50),
+                      Icon(Icons.star, color: Colors.yellow),
+                    ],
                   ),
-                  child: Text(
-                    'Play Again',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    // Navigate back to home page
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MyHomePage(
-                          title: 'Geo Masters',
-                          lastHighestStreak: widget.currentGameHighestStreak,
-                          lastScore: widget.score,
+                  Row(
+                    children: [
+                      Text(
+                        widget.currentGameHighestStreak.toString(),
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      Icon(
+                        Icons.local_fire_department,
+                        color: getStreakIconColor(
+                          widget.currentGameHighestStreak,
                         ),
                       ),
-                      (route) => false,
-                    );
-                  },
-                  style: Theme.of(context).outlinedButtonTheme.style,
-                  child: Text(
-                    'Go Home',
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              Column(
+                spacing: 20,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Navigate to GameScreen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => GameScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      fixedSize: Size(200, 50),
+                    ),
+                    child: Text(
+                      'Play Again',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      // Navigate back to home page
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MyHomePage(
+                            title: 'Geo Masters',
+                            lastHighestStreak: widget.currentGameHighestStreak,
+                            lastScore: widget.score,
+                          ),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    style: Theme.of(context).outlinedButtonTheme.style,
+                    child: Text(
+                      'Go Home',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
