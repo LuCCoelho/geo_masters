@@ -200,9 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => GameScreen(quesionNumber: 1),
-                  ),
+                  MaterialPageRoute(builder: (context) => GameScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -219,9 +217,9 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.quesionNumber});
+  const GameScreen({super.key});
 
-  final int quesionNumber;
+  static int questionNumber = 1;
   static int streak = 0;
   static int currentGameHighestStreak = 0;
   static int score = 0;
@@ -238,7 +236,7 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
-        title: Text('Question ${widget.quesionNumber}'),
+        title: Text('Question ${GameScreen.questionNumber}'),
         actions: [
           IconButton(
             onPressed: () {
@@ -329,6 +327,7 @@ class _GameScreenState extends State<GameScreen> {
                           GameScreen.streak = 0;
                         });
                       }
+                      GameScreen.questionNumber++;
                     },
                     child: Text(
                       alternative['text'] as String,
@@ -422,9 +421,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
                     // Navigate to GameScreen
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => GameScreen(quesionNumber: 1),
-                      ),
+                      MaterialPageRoute(builder: (context) => GameScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
