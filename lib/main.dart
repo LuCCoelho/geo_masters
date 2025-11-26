@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'theme.provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+//TODO: disable back button on end game screen
 
 const mockAlternatives = [
   {'text': 'A', 'isCorrect': true},
@@ -10,8 +14,19 @@ const mockAlternatives = [
 int highestStreak = 0;
 int highestScore = 0;
 
-void main() {
-  runApp(const MyApp());
+List<dynamic> data = [];
+
+void main() async {
+  await dotenv.load(fileName: ".env");
+
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
+
+  data = await Supabase.instance.client.from('countries').select();
+
+  runApp(MyApp());
 }
 
 final ThemeProvider themeProvider = ThemeProvider();
@@ -233,6 +248,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
+    final question = createRandomQuestion();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -290,15 +306,15 @@ class _GameScreenState extends State<GameScreen> {
                 ],
               ),
             ),
-            Image(image: AssetImage('assets/images/question_1.png')),
+            Image(image: NetworkImage(question.imageUrl)),
             Column(
               spacing: 10,
               children: [
-                ...mockAlternatives.map(
+                ...question.alternatives.entries.map(
                   (alternative) => OutlinedButton(
                     style: Theme.of(context).outlinedButtonTheme.style,
                     onPressed: () {
-                      if (alternative['isCorrect'] as bool) {
+                      if (alternative.value) {
                         setState(() {
                           GameScreen.streak++;
                           if (GameScreen.streak >
@@ -330,7 +346,7 @@ class _GameScreenState extends State<GameScreen> {
                       GameScreen.questionNumber++;
                     },
                     child: Text(
-                      alternative['text'] as String,
+                      alternative.key,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ),
@@ -476,6 +492,20 @@ class _EndGameScreenState extends State<EndGameScreen> {
       ),
     );
   }
+}
+
+class Question {
+  String imageUrl;
+  Map<String, bool> alternatives;
+
+  Question({required this.imageUrl, required this.alternatives});
+}
+
+Question createRandomQuestion() {
+  return Question(
+    imageUrl: '${dotenv.env['SUPABASE_IMAGES_BASE_URL']}/flags/br.png',
+    alternatives: {'A': true, 'B': false, 'C': false, 'D': false},
+  );
 }
 
 Color getStreakIconColor(int streak) {
