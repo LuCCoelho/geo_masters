@@ -248,9 +248,103 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  late Question question;
+  String? selectedAlternative;
+  bool answerSelected = false;
+  String? correctAlternative;
+
+  @override
+  void initState() {
+    super.initState();
+    question = createRandomQuestion();
+    // Find the correct alternative key
+    correctAlternative = question.alternatives.entries
+        .firstWhere((entry) => entry.value == true)
+        .key;
+  }
+
+  void _handleAnswerSelection(String alternativeKey, bool isCorrect) {
+    if (answerSelected) return; // Prevent multiple selections
+
+    setState(() {
+      selectedAlternative = alternativeKey;
+      answerSelected = true;
+    });
+
+    if (isCorrect) {
+      setState(() {
+        GameScreen.streak++;
+        if (GameScreen.streak > GameScreen.currentGameHighestStreak) {
+          GameScreen.currentGameHighestStreak = GameScreen.streak;
+        }
+        GameScreen.score += getPoints(GameScreen.streak);
+      });
+    } else {
+      setState(() {
+        GameScreen.errorsCount++;
+        GameScreen.errors[GameScreen.errorsCount - 1] = true;
+        GameScreen.streak = 0;
+      });
+    }
+
+    // Wait a moment to show the color feedback, then move to next question
+    Future.delayed(Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+
+      if (GameScreen.errorsCount == 3) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EndGameScreen(
+              score: GameScreen.score,
+              currentGameHighestStreak: GameScreen.currentGameHighestStreak,
+            ),
+          ),
+        );
+      } else {
+        // Move to next question
+        GameScreen.questionNumber++;
+        // Reset state for new question
+        setState(() {
+          question = createRandomQuestion();
+          selectedAlternative = null;
+          answerSelected = false;
+          correctAlternative = question.alternatives.entries
+              .firstWhere((entry) => entry.value == true)
+              .key;
+        });
+      }
+    });
+  }
+
+  Color? _getButtonColor(String alternativeKey) {
+    if (!answerSelected) {
+      return null; // Default color
+    }
+
+    if (alternativeKey == correctAlternative) {
+      return Colors.green; // Correct answer always green
+    }
+
+    if (alternativeKey == selectedAlternative) {
+      return Colors.red; // Selected wrong answer is red
+    }
+
+    return null; // Other alternatives stay default
+  }
+
+  Color? _getButtonBorderColor(String alternativeKey) {
+    final color = _getButtonColor(alternativeKey);
+    if (color != null) {
+      return color;
+    }
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final question = createRandomQuestion();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -312,50 +406,39 @@ class _GameScreenState extends State<GameScreen> {
             Column(
               spacing: 10,
               children: [
-                ...question.alternatives.entries.map(
-                  (alternative) => OutlinedButton(
-                    style: Theme.of(context).outlinedButtonTheme.style,
-                    onPressed: () {
-                      if (alternative.value) {
-                        setState(() {
-                          GameScreen.streak++;
-                          if (GameScreen.streak >
-                              GameScreen.currentGameHighestStreak) {
-                            GameScreen.currentGameHighestStreak =
-                                GameScreen.streak;
-                          }
-                          GameScreen.score += getPoints(GameScreen.streak);
-                        });
-                      } else {
-                        setState(() {
-                          GameScreen.errorsCount++;
-                          GameScreen.errors[GameScreen.errorsCount - 1] = true;
-                          if (GameScreen.errorsCount == 3) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EndGameScreen(
-                                  score: GameScreen.score,
-                                  currentGameHighestStreak:
-                                      GameScreen.currentGameHighestStreak,
-                                ),
-                              ),
-                            );
-                          }
-                          GameScreen.streak = 0;
-                        });
-                      }
-                      GameScreen.questionNumber++;
-                    },
+                ...question.alternatives.entries.map((alternative) {
+                  final buttonColor = _getButtonColor(alternative.key);
+                  final borderColor = _getButtonBorderColor(alternative.key);
+
+                  return OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: borderColor!,
+                        width: buttonColor != null ? 3 : 1,
+                      ),
+                      backgroundColor: buttonColor?.withOpacity(0.2),
+                      fixedSize: Size(200, 50),
+                    ),
+                    onPressed: answerSelected
+                        ? null
+                        : () => _handleAnswerSelection(
+                            alternative.key,
+                            alternative.value,
+                          ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
                         alternative.key,
-                        style: Theme.of(context).textTheme.bodyLarge,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: buttonColor,
+                          fontWeight: buttonColor != null
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               ],
             ),
           ],
