@@ -396,6 +396,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
     GameScreen.score = 0;
     GameScreen.errors = [false, false, false];
     GameScreen.errorsCount = 0;
+    GameScreen.questionNumber = 1;
 
     return Scaffold(
       appBar: AppBar(
