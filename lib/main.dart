@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'theme.provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:math';
 
 //TODO: disable back button on end game screen
 
@@ -502,9 +503,23 @@ class Question {
 }
 
 Question createRandomQuestion() {
+  final randomIndex = Random().nextInt(data.length);
+  final country = data[randomIndex];
+  final alternativesMap = {
+    '${country['en']}': true,
+    '${data[Random().nextInt(data.length)]['en']}': false,
+    '${data[Random().nextInt(data.length)]['en']}': false,
+    '${data[Random().nextInt(data.length)]['en']}': false,
+  };
+
+  final alternativesList = alternativesMap.entries.toList();
+  alternativesList.shuffle(Random());
+  final shuffledAlternatives = Map<String, bool>.fromEntries(alternativesList);
+
   return Question(
-    imageUrl: '${dotenv.env['SUPABASE_IMAGES_BASE_URL']}/flags/br.png',
-    alternatives: {'A': true, 'B': false, 'C': false, 'D': false},
+    imageUrl:
+        '${dotenv.env['SUPABASE_IMAGES_BASE_URL']}/flags/${country['code'].toLowerCase()}.png',
+    alternatives: shuffledAlternatives,
   );
 }
 
