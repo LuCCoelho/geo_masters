@@ -7,6 +7,8 @@ const mockAlternatives = [
   {'text': 'C', 'isCorrect': false},
   {'text': 'D', 'isCorrect': false},
 ];
+int highestStreak = 0;
+int highestScore = 0;
 
 void main() {
   runApp(const MyApp());
@@ -83,15 +85,26 @@ class _MyAppState extends State<MyApp> {
           bodySmall: TextStyle(color: Colors.white),
         ),
       ),
-      home: const MyHomePage(title: 'Geo Masters'),
+      home: const MyHomePage(
+        title: 'Geo Masters',
+        lastHighestStreak: 0,
+        lastScore: 0,
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({
+    super.key,
+    required this.title,
+    required this.lastHighestStreak,
+    required this.lastScore,
+  });
 
   final String title;
+  final int lastHighestStreak;
+  final int lastScore;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -133,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         Text(
-                          '100',
+                          highestScore.toString(),
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ],
@@ -145,20 +158,40 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         Text(
-                          '53',
+                          highestStreak.toString(),
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ],
                     ),
                   ],
                 ),
-                Column(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text(
-                      'Last Score',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    Column(
+                      children: [
+                        Text(
+                          'Last Score',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        Text(
+                          widget.lastScore.toString(),
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      ],
                     ),
-                    Text('90', style: Theme.of(context).textTheme.bodyLarge),
+                    Column(
+                      children: [
+                        Text(
+                          'Last Streak',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        Text(
+                          widget.lastHighestStreak.toString(),
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ],
@@ -190,6 +223,7 @@ class GameScreen extends StatefulWidget {
 
   final int quesionNumber;
   static int streak = 0;
+  static int currentGameHighestStreak = 0;
   static int score = 0;
   static List<bool> errors = [false, false, false];
   static int errorsCount = 0;
@@ -234,7 +268,7 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                       Icon(
                         Icons.local_fire_department,
-                        color: getStreaColor(GameScreen.streak),
+                        color: getStreakIconColor(GameScreen.streak),
                       ),
                     ],
                   ),
@@ -269,6 +303,11 @@ class _GameScreenState extends State<GameScreen> {
                       if (alternative['isCorrect'] as bool) {
                         setState(() {
                           GameScreen.streak++;
+                          if (GameScreen.streak >
+                              GameScreen.currentGameHighestStreak) {
+                            GameScreen.currentGameHighestStreak =
+                                GameScreen.streak;
+                          }
                           GameScreen.score += getPoints(GameScreen.streak);
                         });
                       } else {
@@ -276,11 +315,14 @@ class _GameScreenState extends State<GameScreen> {
                           GameScreen.errorsCount++;
                           GameScreen.errors[GameScreen.errorsCount - 1] = true;
                           if (GameScreen.errorsCount == 3) {
-                            //push to end of game screen
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EndGameScreen(),
+                                builder: (context) => EndGameScreen(
+                                  score: GameScreen.score,
+                                  currentGameHighestStreak:
+                                      GameScreen.currentGameHighestStreak,
+                                ),
                               ),
                             );
                           }
@@ -304,7 +346,14 @@ class _GameScreenState extends State<GameScreen> {
 }
 
 class EndGameScreen extends StatefulWidget {
-  const EndGameScreen({super.key});
+  const EndGameScreen({
+    super.key,
+    required this.score,
+    required this.currentGameHighestStreak,
+  });
+
+  final int score;
+  final int currentGameHighestStreak;
 
   @override
   State<EndGameScreen> createState() => _EndGameScreenState();
@@ -313,6 +362,21 @@ class EndGameScreen extends StatefulWidget {
 class _EndGameScreenState extends State<EndGameScreen> {
   @override
   Widget build(BuildContext context) {
+    // Update highest streak and score
+    if (widget.currentGameHighestStreak > highestStreak) {
+      highestStreak = widget.currentGameHighestStreak;
+    }
+    if (widget.score > highestScore) {
+      highestScore = widget.score;
+    }
+
+    // Reset game state
+    GameScreen.streak = 0;
+    GameScreen.currentGameHighestStreak = 0;
+    GameScreen.score = 0;
+    GameScreen.errors = [false, false, false];
+    GameScreen.errorsCount = 0;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -337,16 +401,24 @@ class _EndGameScreenState extends State<EndGameScreen> {
               'Thank you for playing!',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(
+                  widget.score.toString(),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                Text(
+                  widget.currentGameHighestStreak.toString(),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
+            ),
             Column(
               spacing: 20,
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    // Reset game state
-                    GameScreen.streak = 0;
-                    GameScreen.score = 0;
-                    GameScreen.errors = [false, false, false];
-                    GameScreen.errorsCount = 0;
                     // Navigate to GameScreen
                     Navigator.pushReplacement(
                       context,
@@ -366,16 +438,15 @@ class _EndGameScreenState extends State<EndGameScreen> {
                 ),
                 OutlinedButton(
                   onPressed: () {
-                    // Reset game state
-                    GameScreen.streak = 0;
-                    GameScreen.score = 0;
-                    GameScreen.errors = [false, false, false];
-                    GameScreen.errorsCount = 0;
                     // Navigate back to home page
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MyHomePage(title: 'Geo Masters'),
+                        builder: (context) => MyHomePage(
+                          title: 'Geo Masters',
+                          lastHighestStreak: widget.currentGameHighestStreak,
+                          lastScore: widget.score,
+                        ),
                       ),
                       (route) => false,
                     );
@@ -395,7 +466,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
   }
 }
 
-Color getStreaColor(int streak) {
+Color getStreakIconColor(int streak) {
   if (streak < 10) {
     return Colors.grey;
   } else if (streak < 20) {
