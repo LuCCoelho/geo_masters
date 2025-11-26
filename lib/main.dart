@@ -28,7 +28,7 @@ void main() async {
 
   data = await Supabase.instance.client.from('countries').select();
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 final ThemeProvider themeProvider = ThemeProvider();
@@ -539,13 +539,21 @@ class Question {
 }
 
 Question createRandomQuestion() {
-  final randomIndex = Random().nextInt(data.length);
-  final country = data[randomIndex];
+  List<int> randomIndexes = [];
+  while (randomIndexes.length < 4) {
+    final randomIndex = Random().nextInt(data.length);
+    if (!randomIndexes.contains(randomIndex)) {
+      randomIndexes.add(randomIndex);
+    }
+  }
+
+  final country = data[randomIndexes[0]];
+
   final alternativesMap = {
     '${country['en']}': true,
-    '${data[Random().nextInt(data.length)]['en']}': false,
-    '${data[Random().nextInt(data.length)]['en']}': false,
-    '${data[Random().nextInt(data.length)]['en']}': false,
+    '${data[randomIndexes[1]]['en']}': false,
+    '${data[randomIndexes[2]]['en']}': false,
+    '${data[randomIndexes[3]]['en']}': false,
   };
 
   final alternativesList = alternativesMap.entries.toList();
