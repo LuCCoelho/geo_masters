@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:math';
 import 'package:lottie/lottie.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 //TODO: disable back button on end game screen
 
@@ -252,6 +253,12 @@ class _GameScreenState extends State<GameScreen> {
   String? selectedAlternative;
   bool answerSelected = false;
   String? correctAlternative;
+  
+  // Queue of pre-generated questions for preloading
+  final List<Question> _upcomingQuestions = [];
+  static const int _preloadCount = 3;
+
+  bool _hasPreloaded = false;
 
   @override
   void initState() {
@@ -261,6 +268,49 @@ class _GameScreenState extends State<GameScreen> {
     correctAlternative = question.alternatives.entries
         .firstWhere((entry) => entry.value == true)
         .key;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Preload upcoming questions (only once, after context is available)
+    if (!_hasPreloaded) {
+      _hasPreloaded = true;
+      _preloadUpcomingQuestions();
+    }
+  }
+
+  /// Generates upcoming questions and preloads their images
+  void _preloadUpcomingQuestions() {
+    // Generate questions to fill the queue
+    while (_upcomingQuestions.length < _preloadCount) {
+      final nextQuestion = createRandomQuestion();
+      _upcomingQuestions.add(nextQuestion);
+      
+      // Preload the image in the background
+      _precacheImage(nextQuestion.imageUrl);
+    }
+  }
+
+  /// Precaches an image URL using CachedNetworkImageProvider
+  void _precacheImage(String imageUrl) {
+    if (!mounted) return;
+    
+    precacheImage(
+      CachedNetworkImageProvider(imageUrl),
+      context,
+    ).catchError((error) {
+      // Silently handle errors for missing images
+      debugPrint('Failed to preload: $imageUrl');
+    });
+  }
+
+  /// Gets the next question from the queue (or creates a new one)
+  Question _getNextQuestion() {
+    if (_upcomingQuestions.isNotEmpty) {
+      return _upcomingQuestions.removeAt(0);
+    }
+    return createRandomQuestion();
   }
 
   void _handleAnswerSelection(String alternativeKey, bool isCorrect) {
@@ -288,7 +338,7 @@ class _GameScreenState extends State<GameScreen> {
     }
 
     // Wait a moment to show the color feedback, then move to next question
-    Future.delayed(Duration(milliseconds: 1500), () {
+    Future.delayed(Duration(milliseconds: 600), () {
       if (!mounted) return;
 
       if (GameScreen.errorsCount == 3) {
@@ -304,15 +354,18 @@ class _GameScreenState extends State<GameScreen> {
       } else {
         // Move to next question
         GameScreen.questionNumber++;
-        // Reset state for new question
+        // Reset state for new question - use preloaded question
         setState(() {
-          question = createRandomQuestion();
+          question = _getNextQuestion();
           selectedAlternative = null;
           answerSelected = false;
           correctAlternative = question.alternatives.entries
               .firstWhere((entry) => entry.value == true)
               .key;
         });
+        
+        // Preload more questions to keep the queue filled
+        _preloadUpcomingQuestions();
       }
     });
   }
@@ -402,7 +455,18 @@ class _GameScreenState extends State<GameScreen> {
                 ],
               ),
             ),
-            Image(image: NetworkImage(question.imageUrl), height: 200),
+            CachedNetworkImage(
+              imageUrl: question.imageUrl,
+              height: 200,
+              placeholder: (context, url) => const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => const SizedBox(
+                height: 200,
+                child: Center(child: Icon(Icons.error, size: 50)),
+              ),
+            ),
             Column(
               spacing: 10,
               children: [
