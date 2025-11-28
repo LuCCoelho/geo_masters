@@ -1,21 +1,12 @@
 import 'package:flutter/material.dart';
-import 'theme.provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:math';
-import 'package:lottie/lottie.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
-//TODO: disable back button on end game screen
-
-const mockAlternatives = [
-  {'text': 'A', 'isCorrect': true},
-  {'text': 'B', 'isCorrect': false},
-  {'text': 'C', 'isCorrect': false},
-  {'text': 'D', 'isCorrect': false},
-];
-int highestStreak = 0;
-int highestScore = 0;
+import 'providers/theme.provider.dart';
+import 'providers/highest_score.provider.dart';
+import 'providers/highest_streak.provider.dart';
+import 'screens/home.dart';
 
 List<dynamic> data = [];
 
@@ -32,715 +23,69 @@ void main() async {
   runApp(const MyApp());
 }
 
-final ThemeProvider themeProvider = ThemeProvider();
-
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    // Listen to theme changes and rebuild when theme changes
-    themeProvider.addListener(_onThemeChanged);
-  }
-
-  void _onThemeChanged() {
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    // Remove listener when widget is disposed
-    themeProvider.removeListener(_onThemeChanged);
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Geo Masters',
-      themeMode: themeProvider.themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primaryColor: Colors.blue[200],
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.black),
-            fixedSize: Size(200, 50),
-          ),
-        ),
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-          bodyMedium: TextStyle(color: Colors.black, fontSize: 20),
-          bodySmall: TextStyle(color: Colors.black),
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: const Color.fromARGB(255, 19, 44, 81),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.white),
-            fixedSize: Size(200, 50),
-          ),
-        ),
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-          bodyMedium: TextStyle(color: Colors.white, fontSize: 20),
-          bodySmall: TextStyle(color: Colors.white),
-        ),
-      ),
-      home: const MyHomePage(
-        title: 'Geo Masters',
-        lastHighestStreak: 0,
-        lastScore: 0,
-      ),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({
-    super.key,
-    required this.title,
-    required this.lastHighestStreak,
-    required this.lastScore,
-  });
-
-  final String title;
-  final int lastHighestStreak;
-  final int lastScore;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            onPressed: () {
-              themeProvider.toggleTheme();
-            },
-            icon: themeProvider.themeMode == ThemeMode.light
-                ? const Icon(Icons.light_mode)
-                : const Icon(Icons.dark_mode),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 60,
-          children: [
-            Column(
-              spacing: 20,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          'Highest Score',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          highestScore.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          'Highest Streak',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          highestStreak.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          'Last Score',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          widget.lastScore.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          'Last Streak',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          widget.lastHighestStreak.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GameScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                fixedSize: Size(200, 50),
-              ),
-              child: Text('Play', style: Theme.of(context).textTheme.bodyLarge),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
-
-  static int questionNumber = 1;
-  static int streak = 0;
-  static int currentGameHighestStreak = 0;
-  static int score = 0;
-  static List<bool> errors = [false, false, false];
-  static int errorsCount = 0;
-
-  @override
-  State<GameScreen> createState() => _GameScreenState();
-}
-
-class _GameScreenState extends State<GameScreen> {
-  late Question question;
-  String? selectedAlternative;
-  bool answerSelected = false;
-  String? correctAlternative;
-  
-  // Queue of pre-generated questions for preloading
-  final List<Question> _upcomingQuestions = [];
-  static const int _preloadCount = 3;
-
-  bool _hasPreloaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    question = createRandomQuestion();
-    // Find the correct alternative key
-    correctAlternative = question.alternatives.entries
-        .firstWhere((entry) => entry.value == true)
-        .key;
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Preload upcoming questions (only once, after context is available)
-    if (!_hasPreloaded) {
-      _hasPreloaded = true;
-      _preloadUpcomingQuestions();
-    }
-  }
-
-  /// Generates upcoming questions and preloads their images
-  void _preloadUpcomingQuestions() {
-    // Generate questions to fill the queue
-    while (_upcomingQuestions.length < _preloadCount) {
-      final nextQuestion = createRandomQuestion();
-      _upcomingQuestions.add(nextQuestion);
-      
-      // Preload the image in the background
-      _precacheImage(nextQuestion.imageUrl);
-    }
-  }
-
-  /// Precaches an image URL using CachedNetworkImageProvider
-  void _precacheImage(String imageUrl) {
-    if (!mounted) return;
-    
-    precacheImage(
-      CachedNetworkImageProvider(imageUrl),
-      context,
-    ).catchError((error) {
-      // Silently handle errors for missing images
-      debugPrint('Failed to preload: $imageUrl');
-    });
-  }
-
-  /// Gets the next question from the queue (or creates a new one)
-  Question _getNextQuestion() {
-    if (_upcomingQuestions.isNotEmpty) {
-      return _upcomingQuestions.removeAt(0);
-    }
-    return createRandomQuestion();
-  }
-
-  void _handleAnswerSelection(String alternativeKey, bool isCorrect) {
-    if (answerSelected) return; // Prevent multiple selections
-
-    setState(() {
-      selectedAlternative = alternativeKey;
-      answerSelected = true;
-    });
-
-    if (isCorrect) {
-      setState(() {
-        GameScreen.streak++;
-        if (GameScreen.streak > GameScreen.currentGameHighestStreak) {
-          GameScreen.currentGameHighestStreak = GameScreen.streak;
-        }
-        GameScreen.score += getPoints(GameScreen.streak);
-      });
-    } else {
-      setState(() {
-        GameScreen.errorsCount++;
-        GameScreen.errors[GameScreen.errorsCount - 1] = true;
-        GameScreen.streak = 0;
-      });
-    }
-
-    // Wait a moment to show the color feedback, then move to next question
-    Future.delayed(Duration(milliseconds: 600), () {
-      if (!mounted) return;
-
-      if (GameScreen.errorsCount == 3) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EndGameScreen(
-              score: GameScreen.score,
-              currentGameHighestStreak: GameScreen.currentGameHighestStreak,
-            ),
-          ),
-        );
-      } else {
-        // Move to next question
-        GameScreen.questionNumber++;
-        // Reset state for new question - use preloaded question
-        setState(() {
-          question = _getNextQuestion();
-          selectedAlternative = null;
-          answerSelected = false;
-          correctAlternative = question.alternatives.entries
-              .firstWhere((entry) => entry.value == true)
-              .key;
-        });
-        
-        // Preload more questions to keep the queue filled
-        _preloadUpcomingQuestions();
-      }
-    });
-  }
-
-  Color? _getButtonColor(String alternativeKey) {
-    if (!answerSelected) {
-      return null; // Default color
-    }
-
-    if (alternativeKey == correctAlternative) {
-      return Colors.green; // Correct answer always green
-    }
-
-    if (alternativeKey == selectedAlternative) {
-      return Colors.red; // Selected wrong answer is red
-    }
-
-    return null; // Other alternatives stay default
-  }
-
-  Color? _getButtonBorderColor(String alternativeKey) {
-    final color = _getButtonColor(alternativeKey);
-    if (color != null) {
-      return color;
-    }
-    return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        title: Text('Question ${GameScreen.questionNumber}'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              themeProvider.toggleTheme();
-            },
-            icon: themeProvider.themeMode == ThemeMode.light
-                ? const Icon(Icons.light_mode)
-                : const Icon(Icons.dark_mode),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 40,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        GameScreen.streak.toString(),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      Icon(
-                        Icons.local_fire_department,
-                        color: getStreakIconColor(GameScreen.streak),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      ...GameScreen.errors.map(
-                        (err) => Icon(
-                          Icons.close,
-                          color: err ? Colors.red : Colors.grey,
-                          size: 35,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(GameScreen.score.toString()),
-                      Icon(Icons.star, color: Colors.yellow),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            CachedNetworkImage(
-              imageUrl: question.imageUrl,
-              height: 200,
-              placeholder: (context, url) => const SizedBox(
-                height: 200,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              errorWidget: (context, url, error) => const SizedBox(
-                height: 200,
-                child: Center(child: Icon(Icons.error, size: 50)),
-              ),
-            ),
-            Column(
-              spacing: 10,
-              children: [
-                ...question.alternatives.entries.map((alternative) {
-                  final buttonColor = _getButtonColor(alternative.key);
-                  final borderColor = _getButtonBorderColor(alternative.key);
-
-                  return OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: borderColor!,
-                        width: buttonColor != null ? 3 : 1,
-                      ),
-                      backgroundColor: buttonColor?.withOpacity(0.2),
-                      fixedSize: Size(200, 50),
-                    ),
-                    onPressed: answerSelected
-                        ? null
-                        : () => _handleAnswerSelection(
-                            alternative.key,
-                            alternative.value,
-                          ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        alternative.key,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: buttonColor,
-                          fontWeight: buttonColor != null
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class EndGameScreen extends StatefulWidget {
-  const EndGameScreen({
-    super.key,
-    required this.score,
-    required this.currentGameHighestStreak,
-  });
-
-  final int score;
-  final int currentGameHighestStreak;
-
-  @override
-  State<EndGameScreen> createState() => _EndGameScreenState();
-}
-
-class _EndGameScreenState extends State<EndGameScreen> {
-  @override
-  Widget build(BuildContext context) {
-    // Update highest streak and score
-    if (widget.currentGameHighestStreak > highestStreak) {
-      highestStreak = widget.currentGameHighestStreak;
-    }
-    if (widget.score > highestScore) {
-      highestScore = widget.score;
-    }
-
-    // Reset game state
-    GameScreen.streak = 0;
-    GameScreen.currentGameHighestStreak = 0;
-    GameScreen.score = 0;
-    GameScreen.errors = [false, false, false];
-    GameScreen.errorsCount = 0;
-    GameScreen.questionNumber = 1;
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        title: Text('Game Over'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              themeProvider.toggleTheme();
-            },
-            icon: themeProvider.themeMode == ThemeMode.light
-                ? const Icon(Icons.light_mode)
-                : const Icon(Icons.dark_mode),
-          ),
-        ],
-      ),
-      body: _buildUI(),
-    );
-  }
-
-  Widget _buildUI() {
-    return Stack(
-      alignment: AlignmentDirectional.center,
-      children: [
-        Lottie.asset('assets/animations/confetti.json', repeat: false),
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 40,
-            children: [
-              Text(
-                'Thank you for playing!',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        widget.score.toString(),
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      Icon(Icons.star, color: Colors.yellow),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        widget.currentGameHighestStreak.toString(),
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      Icon(
-                        Icons.local_fire_department,
-                        color: getStreakIconColor(
-                          widget.currentGameHighestStreak,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Column(
-                spacing: 20,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navigate to GameScreen
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => GameScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      fixedSize: Size(200, 50),
-                    ),
-                    child: Text(
-                      'Play Again',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ),
-                  OutlinedButton(
-                    onPressed: () {
-                      // Navigate back to home page
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MyHomePage(
-                            title: 'Geo Masters',
-                            lastHighestStreak: widget.currentGameHighestStreak,
-                            lastScore: widget.score,
-                          ),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                    style: Theme.of(context).outlinedButtonTheme.style,
-                    child: Text(
-                      'Go Home',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => HighestScoreProvider()),
+        ChangeNotifierProvider(create: (_) => HighestStreakProvider()),
       ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'Geo Masters',
+            themeMode: themeProvider.themeMode,
+            theme: ThemeData(
+              brightness: Brightness.light,
+              primaryColor: Colors.blue[200],
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.black),
+                  fixedSize: Size(200, 50),
+                ),
+              ),
+              textTheme: TextTheme(
+                bodyLarge: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                bodyMedium: TextStyle(color: Colors.black, fontSize: 20),
+                bodySmall: TextStyle(color: Colors.black),
+              ),
+            ),
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+              primaryColor: const Color.fromARGB(255, 19, 44, 81),
+              outlinedButtonTheme: OutlinedButtonThemeData(
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.white),
+                  fixedSize: Size(200, 50),
+                ),
+              ),
+              textTheme: TextTheme(
+                bodyLarge: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                bodyMedium: TextStyle(color: Colors.white, fontSize: 20),
+                bodySmall: TextStyle(color: Colors.white),
+              ),
+            ),
+            home: MyHomePage(
+              title: 'Geo Masters',
+              lastHighestStreak: 0,
+              lastScore: 0,
+              data: data,
+            ),
+          );
+        },
+      ),
     );
-  }
-}
-
-enum QuestionType {
-  flag(1),
-  shape(2);
-
-  final int value;
-  const QuestionType(this.value);
-
-  String get pathName {
-    switch (this) {
-      case QuestionType.flag:
-        return 'flags';
-      case QuestionType.shape:
-        return 'shape';
-    }
-  }
-}
-
-class Question {
-  QuestionType type;
-  String imageUrl;
-  Map<String, bool> alternatives;
-
-  Question({
-    required this.imageUrl,
-    required this.alternatives,
-    required this.type,
-  });
-}
-
-Question createRandomQuestion() {
-  List<int> randomIndexes = [];
-  while (randomIndexes.length < 4) {
-    final randomIndex = Random().nextInt(data.length);
-    if (!randomIndexes.contains(randomIndex)) {
-      randomIndexes.add(randomIndex);
-    }
-  }
-
-  final country = data[randomIndexes[0]];
-
-  final alternativesMap = {
-    '${country['en']}': true,
-    '${data[randomIndexes[1]]['en']}': false,
-    '${data[randomIndexes[2]]['en']}': false,
-    '${data[randomIndexes[3]]['en']}': false,
-  };
-
-  final alternativesList = alternativesMap.entries.toList();
-  alternativesList.shuffle(Random());
-  final shuffledAlternatives = Map<String, bool>.fromEntries(alternativesList);
-
-  // Randomly select between flag (1) and shape (2)
-  final questionType = Random().nextBool()
-      ? QuestionType.flag
-      : QuestionType.shape;
-
-  return Question(
-    type: questionType,
-    imageUrl:
-        '${dotenv.env['SUPABASE_IMAGES_BASE_URL']}/${questionType.pathName}/${country['code'].toLowerCase()}.png',
-    alternatives: shuffledAlternatives,
-  );
-}
-
-Color getStreakIconColor(int streak) {
-  if (streak < 10) {
-    return Colors.grey;
-  } else if (streak < 20) {
-    return Colors.yellow;
-  } else if (streak < 30) {
-    return Colors.orange;
-  } else {
-    return Colors.blue;
-  }
-}
-
-int getPoints(int streak) {
-  if (streak < 10) {
-    return 1;
-  } else if (streak < 20) {
-    return 2;
-  } else if (streak < 30) {
-    return 3;
-  } else {
-    return 4;
   }
 }
