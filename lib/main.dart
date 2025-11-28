@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'providers/theme.provider.dart';
 import 'providers/highest_score.provider.dart';
 import 'providers/highest_streak.provider.dart';
-import 'screens/home.dart';
+import 'screens/open.dart';
 
 List<dynamic> data = [];
 
@@ -77,12 +77,7 @@ class MyApp extends StatelessWidget {
                 bodySmall: TextStyle(color: Colors.white),
               ),
             ),
-            home: MyHomePage(
-              title: 'Geo Masters',
-              lastHighestStreak: 0,
-              lastScore: 0,
-              data: data,
-            ),
+              home: OpenScreen(data: data),
           );
         },
       ),
