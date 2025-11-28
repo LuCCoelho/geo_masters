@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geo_masters/providers/auth_provider.dart';
 import 'package:geo_masters/providers/theme.provider.dart';
 import 'package:geo_masters/screens/open.dart';
+import 'package:geo_masters/screens/login.dart';
 
 // Change to true to enable authentication
 // with Google Sign In
@@ -98,30 +99,13 @@ class AuthenticationWrapper extends ConsumerWidget {
 
     return authStateAsync.when(
       data: (AuthState state) {
-        return state.session == null ? const SignInPage() : const MainPage();
+        return state.session == null ? const LoginScreen() : const MainPage();
       },
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, __) {
         return Scaffold(body: Center(child: Text('Error: $error')));
       },
-    );
-  }
-}
-
-class SignInPage extends ConsumerWidget {
-  const SignInPage({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => ref.read(authProvider.notifier).signInWithGoogle(),
-          child: const Text('Sign in with Google'),
-        ),
-      ),
     );
   }
 }
