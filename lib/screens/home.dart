@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'game.dart';
 import '../widgets/app_bar.dart';
 import '../providers/highest_score.provider.dart';
 import '../providers/highest_streak.provider.dart';
+import '../providers/auth_provider.dart';
+import '../screens/game.dart';
+import '../screens/login.dart';
 
 class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({
@@ -32,89 +34,119 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
 
     return Scaffold(
       appBar: getAppBar(context, widget.title, ref),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 60,
-          children: [
-            Column(
-              spacing: 20,
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 60,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
+                  spacing: 20,
                   children: [
-                    Column(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text(
-                          'Highest Score',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        Column(
+                          children: [
+                            Text(
+                              'Highest Score',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Text(
+                              highestScore.toString(),
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
-                        Text(
-                          highestScore.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
+                        Column(
+                          children: [
+                            Text(
+                              'Highest Streak',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Text(
+                              highestStreak.toString(),
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    Column(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text(
-                          'Highest Streak',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        Column(
+                          children: [
+                            Text(
+                              'Last Score',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Text(
+                              widget.lastScore.toString(),
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
-                        Text(
-                          highestStreak.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
+                        Column(
+                          children: [
+                            Text(
+                              'Last Streak',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            Text(
+                              widget.lastHighestStreak.toString(),
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          'Last Score',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          widget.lastScore.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          'Last Streak',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          widget.lastHighestStreak.toString(),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                  ],
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const GameScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    fixedSize: Size(200, 50),
+                  ),
+                  child: Text(
+                    'Play',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
                 ),
               ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const GameScreen()),
-                );
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: () async {
+                try {
+                  await ref.read(authProvider.notifier).signOut();
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('Error signing out: $e');
+                }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                fixedSize: Size(200, 50),
-              ),
-              child: Text('Play', style: Theme.of(context).textTheme.bodyLarge),
+              icon: Icon(Icons.logout),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
