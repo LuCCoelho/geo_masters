@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'game.dart';
 import 'home.dart';
 import '../widgets/app_bar.dart';
 import '../providers/highest_score.provider.dart';
 import '../providers/highest_streak.provider.dart';
+import '../providers/country_data.provider.dart';
 
-class EndGameScreen extends StatefulWidget {
+class EndGameScreen extends ConsumerStatefulWidget {
   const EndGameScreen({
     super.key,
     required this.title,
     required this.score,
     required this.currentGameHighestStreak,
-    required this.data,
   });
 
   final String title;
   final int score;
   final int currentGameHighestStreak;
-  final List<dynamic> data;
 
   @override
-  State<EndGameScreen> createState() => _EndGameScreenState();
+  ConsumerState<EndGameScreen> createState() => _EndGameScreenState();
 }
 
-class _EndGameScreenState extends State<EndGameScreen> {
+class _EndGameScreenState extends ConsumerState<EndGameScreen> {
   bool _hasUpdatedProviders = false;
   bool? _isNewHighestScore;
 
@@ -41,23 +40,19 @@ class _EndGameScreenState extends State<EndGameScreen> {
     if (_hasUpdatedProviders) return;
     _hasUpdatedProviders = true;
 
-    final highestScoreProvider = Provider.of<HighestScoreProvider>(
-      context,
-      listen: false,
-    );
-    final highestStreakProvider = Provider.of<HighestStreakProvider>(
-      context,
-      listen: false,
-    );
+    final highestScoreAsync = ref.read(highestScoreProvider);
+    final currentHighestScore = highestScoreAsync.value ?? 0;
 
     // Check before updating
-    _isNewHighestScore = widget.score > highestScoreProvider.highestScore;
+    _isNewHighestScore = widget.score > currentHighestScore;
 
     // Update providers
-    await highestScoreProvider.updateHighestScore(widget.score);
-    await highestStreakProvider.updateHighestStreak(
-      widget.currentGameHighestStreak,
-    );
+    await ref
+        .read(highestScoreProvider.notifier)
+        .updateHighestScore(widget.score);
+    await ref
+        .read(highestStreakProvider.notifier)
+        .updateHighestStreak(widget.currentGameHighestStreak);
   }
 
   @override
@@ -70,21 +65,16 @@ class _EndGameScreenState extends State<EndGameScreen> {
     GameScreen.errorsCount = 0;
     GameScreen.questionNumber = 1;
 
-    final highestScoreProvider = Provider.of<HighestScoreProvider>(context);
-    final highestStreakProvider = Provider.of<HighestStreakProvider>(context);
+    final highestScoreAsync = ref.watch(highestScoreProvider);
+    final currentHighestScore = highestScoreAsync.value ?? 0;
 
     // Use stored value if available, otherwise check current provider state
     final isNewHighestScore =
-        _isNewHighestScore ??
-        (widget.score > highestScoreProvider.highestScore);
+        _isNewHighestScore ?? (widget.score > currentHighestScore);
 
     return Scaffold(
-      appBar: getAppBar(context, widget.title),
-      body: _buildUI(
-        highestScoreProvider,
-        highestStreakProvider,
-        isNewHighestScore,
-      ),
+      appBar: getAppBar(context, widget.title, ref),
+      body: _buildUI(isNewHighestScore),
     );
   }
 
@@ -100,11 +90,7 @@ class _EndGameScreenState extends State<EndGameScreen> {
     }
   }
 
-  Widget _buildUI(
-    HighestScoreProvider highestScoreProvider,
-    HighestStreakProvider highestStreakProvider,
-    bool isNewHighestScore,
-  ) {
+  Widget _buildUI(bool isNewHighestScore) {
     return Stack(
       alignment: isNewHighestScore
           ? AlignmentDirectional.center
@@ -154,12 +140,13 @@ class _EndGameScreenState extends State<EndGameScreen> {
                   ElevatedButton(
                     onPressed: () {
                       // Navigate to GameScreen
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GameScreen(data: widget.data),
-                        ),
-                      );
+                      final countryDataAsync = ref.read(countryDataProvider);
+                      countryDataAsync.whenData((data) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => GameScreen()),
+                        );
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
@@ -180,7 +167,6 @@ class _EndGameScreenState extends State<EndGameScreen> {
                             title: 'Geo Masters',
                             lastHighestStreak: widget.currentGameHighestStreak,
                             lastScore: widget.score,
-                            data: widget.data,
                           ),
                         ),
                         (route) => false,

@@ -1,35 +1,36 @@
-import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class HighestStreakProvider with ChangeNotifier {
-  int _highestStreak = 0;
+part 'highest_streak.provider.g.dart';
+
+@riverpod
+class HighestStreak extends _$HighestStreak {
   static const String _key = 'highest_streak';
 
-  int get highestStreak => _highestStreak;
-
-  HighestStreakProvider() {
-    _loadHighestStreak();
-  }
-
-  Future<void> _loadHighestStreak() async {
+  @override
+  Future<int> build() async {
     final prefs = await SharedPreferences.getInstance();
-    _highestStreak = prefs.getInt(_key) ?? 0;
-    notifyListeners();
+    return prefs.getInt(_key) ?? 0;
   }
 
   Future<void> updateHighestStreak(int newStreak) async {
     // Ensure we have the latest value from storage
     final prefs = await SharedPreferences.getInstance();
     final storedStreak = prefs.getInt(_key) ?? 0;
-    if (storedStreak > _highestStreak) {
-      _highestStreak = storedStreak;
-    }
+    final currentStreak = state.value ?? 0;
+
+    // Get the maximum of stored and current state
+    final maxStreak = storedStreak > currentStreak
+        ? storedStreak
+        : currentStreak;
 
     // Only update if new streak is higher
-    if (newStreak > _highestStreak) {
-      _highestStreak = newStreak;
-      await prefs.setInt(_key, _highestStreak);
-      notifyListeners();
+    if (newStreak > maxStreak) {
+      await prefs.setInt(_key, newStreak);
+      state = AsyncValue.data(newStreak);
+    } else if (storedStreak > currentStreak) {
+      // Update state if stored value is higher than current state
+      state = AsyncValue.data(storedStreak);
     }
   }
 }

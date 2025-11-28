@@ -1,35 +1,34 @@
-import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class HighestScoreProvider with ChangeNotifier {
-  int _highestScore = 0;
+part 'highest_score.provider.g.dart';
+
+@riverpod
+class HighestScore extends _$HighestScore {
   static const String _key = 'highest_score';
 
-  int get highestScore => _highestScore;
-
-  HighestScoreProvider() {
-    _loadHighestScore();
-  }
-
-  Future<void> _loadHighestScore() async {
+  @override
+  Future<int> build() async {
     final prefs = await SharedPreferences.getInstance();
-    _highestScore = prefs.getInt(_key) ?? 0;
-    notifyListeners();
+    return prefs.getInt(_key) ?? 0;
   }
 
   Future<void> updateHighestScore(int newScore) async {
     // Ensure we have the latest value from storage
     final prefs = await SharedPreferences.getInstance();
     final storedScore = prefs.getInt(_key) ?? 0;
-    if (storedScore > _highestScore) {
-      _highestScore = storedScore;
-    }
+    final currentScore = state.value ?? 0;
+
+    // Get the maximum of stored and current state
+    final maxScore = storedScore > currentScore ? storedScore : currentScore;
 
     // Only update if new score is higher
-    if (newScore > _highestScore) {
-      _highestScore = newScore;
-      await prefs.setInt(_key, _highestScore);
-      notifyListeners();
+    if (newScore > maxScore) {
+      await prefs.setInt(_key, newScore);
+      state = AsyncValue.data(newScore);
+    } else if (storedScore > currentScore) {
+      // Update state if stored value is higher than current state
+      state = AsyncValue.data(storedScore);
     }
   }
 }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/theme.provider.dart';
 
-AppBar getAppBar(BuildContext context, String title) {
-  final themeProvider = Provider.of<ThemeProvider>(context);
+AppBar getAppBar(BuildContext context, String title, WidgetRef ref) {
   final brightness = Theme.of(context).brightness;
 
   return AppBar(
@@ -12,7 +11,7 @@ AppBar getAppBar(BuildContext context, String title) {
     actions: [
       IconButton(
         onPressed: () {
-          themeProvider.toggleTheme();
+          ref.read(appThemeProvider.notifier).toggleTheme();
         },
         icon: brightness == Brightness.light
             ? const Icon(Icons.light_mode)

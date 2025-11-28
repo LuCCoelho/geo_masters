@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'game.dart';
 import '../widgets/app_bar.dart';
 import '../providers/highest_score.provider.dart';
 import '../providers/highest_streak.provider.dart';
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({
     super.key,
     required this.title,
     required this.lastHighestStreak,
     required this.lastScore,
-    required this.data,
   });
 
   final String title;
   final int lastHighestStreak;
   final int lastScore;
-  final List<dynamic> data;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends ConsumerState<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    final highestScoreProvider = Provider.of<HighestScoreProvider>(context);
-    final highestStreakProvider = Provider.of<HighestStreakProvider>(context);
+    final highestScoreAsync = ref.watch(highestScoreProvider);
+    final highestStreakAsync = ref.watch(highestStreakProvider);
+
+    final highestScore = highestScoreAsync.value ?? 0;
+    final highestStreak = highestStreakAsync.value ?? 0;
 
     return Scaffold(
-      appBar: getAppBar(context, widget.title),
+      appBar: getAppBar(context, widget.title, ref),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -49,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         Text(
-                          highestScoreProvider.highestScore.toString(),
+                          highestScore.toString(),
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ],
@@ -61,7 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         Text(
-                          highestStreakProvider.highestStreak.toString(),
+                          highestStreak.toString(),
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ],
@@ -103,9 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => GameScreen(data: widget.data),
-                  ),
+                  MaterialPageRoute(builder: (context) => const GameScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(

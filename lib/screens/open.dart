@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'home.dart';
+import '../providers/country_data.provider.dart';
 
-class OpenScreen extends StatefulWidget {
-  const OpenScreen({super.key, required this.data});
-
-  final List<dynamic> data;
+class OpenScreen extends ConsumerStatefulWidget {
+  const OpenScreen({super.key});
 
   @override
-  State<OpenScreen> createState() => _OpenScreenState();
+  ConsumerState<OpenScreen> createState() => _OpenScreenState();
 }
 
-class _OpenScreenState extends State<OpenScreen> {
+class _OpenScreenState extends ConsumerState<OpenScreen> {
   @override
   void initState() {
     super.initState();
+    // Prefetch the data
+    ref.read(countryDataProvider);
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MyHomePage(
-            title: 'Geo Masters',
-            lastHighestStreak: 0,
-            lastScore: 0,
-            data: widget.data,
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MyHomePage(
+              title: 'Geo Masters',
+              lastHighestStreak: 0,
+              lastScore: 0,
+            ),
           ),
-        ),
-      );
+        );
+      }
     });
   }
 

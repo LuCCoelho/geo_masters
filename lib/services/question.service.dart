@@ -9,6 +9,21 @@ final List<Question> upcomingQuestions = [];
 const int preloadCount = 3;
 
 Question createRandomQuestion(List<dynamic> data) {
+  if (data.isEmpty) {
+    throw Exception('Country data is empty');
+  }
+
+  if (data.length < 4) {
+    throw Exception(
+      'Not enough countries in data (need at least 4, got ${data.length})',
+    );
+  }
+
+  final baseUrl = dotenv.env['SUPABASE_IMAGES_BASE_URL'];
+  if (baseUrl == null || baseUrl.isEmpty) {
+    throw Exception('SUPABASE_IMAGES_BASE_URL is not set in .env file');
+  }
+
   List<int> randomIndexes = [];
   while (randomIndexes.length < 4) {
     final randomIndex = Random().nextInt(data.length);
@@ -18,6 +33,14 @@ Question createRandomQuestion(List<dynamic> data) {
   }
 
   final country = data[randomIndexes[0]];
+
+  // Validate required fields
+  if (!country.containsKey('en') || country['en'] == null) {
+    throw Exception('Country data is missing required field: en');
+  }
+  if (!country.containsKey('code') || country['code'] == null) {
+    throw Exception('Country data is missing required field: code');
+  }
 
   final alternativesMap = {
     '${country['en']}': true,
@@ -38,7 +61,7 @@ Question createRandomQuestion(List<dynamic> data) {
   return Question(
     type: questionType,
     imageUrl:
-        '${dotenv.env['SUPABASE_IMAGES_BASE_URL']}/${questionType.pathName}/${country['code'].toLowerCase()}.png',
+        '$baseUrl/${questionType.pathName}/${country['code'].toLowerCase()}.png',
     alternatives: shuffledAlternatives,
   );
 }

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system; // Initial theme mode
+part 'theme.provider.g.dart';
 
-  ThemeMode get themeMode => _themeMode;
+@riverpod
+class AppTheme extends _$AppTheme {
+  @override
+  ThemeMode build() {
+    return ThemeMode.system; // Initial theme mode
+  }
 
   void toggleTheme() {
-    _themeMode = (_themeMode == ThemeMode.light
-        ? ThemeMode.dark
-        : ThemeMode.light);
-    notifyListeners(); // Notify listeners to rebuild
+    state = (state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light);
   }
 }
