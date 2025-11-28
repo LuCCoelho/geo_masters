@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:geo_masters/screens/login.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'home.dart';
 import '../providers/country_data.provider.dart';
 
 class OpenScreen extends ConsumerStatefulWidget {
@@ -22,13 +22,7 @@ class _OpenScreenState extends ConsumerState<OpenScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => MyHomePage(
-              title: 'Geo Masters',
-              lastHighestStreak: 0,
-              lastScore: 0,
-            ),
-          ),
+          MaterialPageRoute(builder: (context) => LoginScreen()),
         );
       }
     });
