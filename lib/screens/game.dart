@@ -330,7 +330,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                             color: borderColor!,
                             width: buttonColor != null ? 3 : 1,
                           ),
-                          backgroundColor: buttonColor?.withOpacity(0.2),
+                          backgroundColor: buttonColor?.withValues(alpha: 0.2),
                           fixedSize: Size(200, 50),
                         ),
                         onPressed: answerSelected
