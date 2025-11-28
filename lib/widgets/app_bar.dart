@@ -4,6 +4,7 @@ import '../providers/theme.provider.dart';
 
 AppBar getAppBar(BuildContext context, String title) {
   final themeProvider = Provider.of<ThemeProvider>(context);
+  final brightness = Theme.of(context).brightness;
 
   return AppBar(
     backgroundColor: Theme.of(context).primaryColor,
@@ -13,7 +14,7 @@ AppBar getAppBar(BuildContext context, String title) {
         onPressed: () {
           themeProvider.toggleTheme();
         },
-        icon: themeProvider.themeMode == ThemeMode.light
+        icon: brightness == Brightness.light
             ? const Icon(Icons.light_mode)
             : const Icon(Icons.dark_mode),
       ),
