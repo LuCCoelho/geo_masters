@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/app_bar.dart';
 import '../providers/highest_score.provider.dart';
 import '../providers/highest_streak.provider.dart';
-import '../providers/auth_provider.dart';
 import '../screens/game.dart';
-import '../screens/login.dart';
 
 class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({
@@ -33,7 +31,7 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     final highestStreak = highestStreakAsync.value ?? 0;
 
     return Scaffold(
-      appBar: getAppBar(context, widget.title, ref),
+      appBar: getAppBar(context, widget.title, ref, showDropdown: true),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
