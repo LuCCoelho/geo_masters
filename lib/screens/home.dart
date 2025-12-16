@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../widgets/app_bar.dart';
 import '../providers/profile.provider.dart';
 import '../screens/game.dart';
-import '../screens/leadboard.dart';
+import '../screens/leaderboard.dart';
 import '../screens/friends_room.dart';
 
 class MyHomePage extends ConsumerStatefulWidget {
