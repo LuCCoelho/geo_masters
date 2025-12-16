@@ -5,6 +5,7 @@ import '../widgets/app_bar.dart';
 import '../providers/profile.provider.dart';
 import '../screens/game.dart';
 import '../screens/leadboard.dart';
+import '../screens/friends_room.dart';
 
 class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({
@@ -139,6 +140,24 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
                 );
               },
               icon: Icon(FontAwesomeIcons.trophy, color: Colors.amber),
+            ),
+          ),
+          Positioned(
+            top: 20,
+            left: 10,
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FriendsRoomScreen(),
+                  ),
+                );
+              },
+              icon: Icon(
+                FontAwesomeIcons.users,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
           ),
         ],
