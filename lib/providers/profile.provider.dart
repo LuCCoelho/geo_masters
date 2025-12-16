@@ -86,8 +86,10 @@ class ProfileData extends _$ProfileData {
 
         state = AsyncValue.data(updated);
         debugPrint('Profile provider: Updated highest score to $newScore');
+        debugPrint('Profile provider: Updated data: $updated');
       } catch (e) {
         debugPrint('Profile provider: Error updating highest score: $e');
+        ref.invalidateSelf();
         rethrow;
       }
     }
@@ -116,8 +118,10 @@ class ProfileData extends _$ProfileData {
 
         state = AsyncValue.data(updated);
         debugPrint('Profile provider: Updated highest streak to $newStreak');
+        debugPrint('Profile provider: Updated data: $updated');
       } catch (e) {
         debugPrint('Profile provider: Error updating highest streak: $e');
+        ref.invalidateSelf();
         rethrow;
       }
     }
