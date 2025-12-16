@@ -20,6 +20,37 @@ class Auth extends _$Auth {
       await Supabase.instance.client.auth.signInWithOAuth(OAuthProvider.google);
     } catch (e) {
       debugPrint('Error signing in with Google (Supabase): $e');
+      rethrow;
+    }
+  }
+
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      debugPrint('Error signing in with email: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> signUpWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      debugPrint('Error signing up with email: $e');
+      rethrow;
     }
   }
 
@@ -28,6 +59,7 @@ class Auth extends _$Auth {
       await Supabase.instance.client.auth.signOut();
     } catch (e) {
       debugPrint('Error signing out: $e');
+      rethrow;
     }
   }
 }

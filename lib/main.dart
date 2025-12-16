@@ -7,6 +7,7 @@ import 'package:geo_masters/providers/auth_provider.dart';
 import 'package:geo_masters/providers/theme.provider.dart';
 import 'package:geo_masters/screens/open.dart';
 import 'package:geo_masters/screens/login.dart';
+import 'package:geo_masters/screens/home.dart';
 
 // Change to true to enable authentication
 // with Google Sign In
@@ -86,7 +87,11 @@ class MainPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const OpenScreen();
+    return const MyHomePage(
+      title: 'Geo Masters',
+      lastHighestStreak: 0,
+      lastScore: 0,
+    );
   }
 }
 
