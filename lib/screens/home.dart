@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/app_bar.dart';
-import '../providers/highest_score.provider.dart';
-import '../providers/highest_streak.provider.dart';
+import '../providers/profile.provider.dart';
 import '../screens/game.dart';
 
 class MyHomePage extends ConsumerStatefulWidget {
@@ -24,11 +23,11 @@ class MyHomePage extends ConsumerStatefulWidget {
 class _MyHomePageState extends ConsumerState<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    final highestScoreAsync = ref.watch(highestScoreProvider);
-    final highestStreakAsync = ref.watch(highestStreakProvider);
+    final profileDataAsync = ref.watch(profileDataProvider);
 
-    final highestScore = highestScoreAsync.value ?? 0;
-    final highestStreak = highestStreakAsync.value ?? 0;
+    // Extract highest score from profile data
+    final highestScore = profileDataAsync.value?['highest_score'] ?? 0;
+    final highestStreak = profileDataAsync.value?['highest_streak'] ?? 0;
 
     return Scaffold(
       appBar: getAppBar(context, widget.title, ref, showDropdown: true),
