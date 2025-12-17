@@ -95,10 +95,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     // Wait a moment to show the color feedback, then move to next question
     // Longer delay for comparison questions to allow reading the metadata
-    final isComparison = question!.type == QuestionType.populationComparison ||
+    final isComparison =
+        question!.type == QuestionType.populationComparison ||
         question!.type == QuestionType.sizeComparison;
     final delayMilliseconds = isComparison ? 2500 : 600;
-    
+
     Future.delayed(Duration(milliseconds: delayMilliseconds), () {
       if (!mounted) return;
 
@@ -166,12 +167,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   String _getQuestionText(Question question) {
     switch (question.type) {
       case QuestionType.flag:
-        return 'Which country\'s flag?';
+        return 'Which country\'s flag is this?';
       case QuestionType.shape:
         return 'What country is this?';
       case QuestionType.capital:
         final hint = question.hint ?? 'this country';
-        return 'Capital of $hint?';
+        return "What's the capital of $hint?";
       case QuestionType.capitalReverse:
         return 'This is the capital of?';
       case QuestionType.populationComparison:
@@ -227,7 +228,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         textAlign: TextAlign.center,
       );
     }
-    
+
     // For comparison questions, show an icon
     if (question.type == QuestionType.populationComparison ||
         question.type == QuestionType.sizeComparison) {
@@ -237,21 +238,24 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         color: _getQuestionColor(question).withValues(alpha: 0.3),
       );
     }
-    
+
     // Default: empty
     return const SizedBox.shrink();
   }
 
   Widget _buildAlternativeContent(String alternativeKey, Color? buttonColor) {
-    final isComparison = question!.type == QuestionType.populationComparison ||
+    final isComparison =
+        question!.type == QuestionType.populationComparison ||
         question!.type == QuestionType.sizeComparison;
-    
+
     // Show metadata only after answer is selected for comparison questions
     String? metadata;
-    if (answerSelected && isComparison && question!.alternativesMetadata != null) {
+    if (answerSelected &&
+        isComparison &&
+        question!.alternativesMetadata != null) {
       metadata = question!.alternativesMetadata![alternativeKey];
     }
-    
+
     if (metadata != null) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -261,7 +265,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             alternativeKey,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: buttonColor,
-              fontWeight: buttonColor != null ? FontWeight.bold : FontWeight.normal,
+              fontWeight: buttonColor != null
+                  ? FontWeight.bold
+                  : FontWeight.normal,
               fontSize: 13,
               height: 1.1,
             ),
@@ -285,7 +291,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         ],
       );
     }
-    
+
     // Default: just the country name
     return Text(
       alternativeKey,
@@ -408,137 +414,141 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 25,
                 children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            GameScreen.streak.toString(),
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          Icon(
-                            Icons.local_fire_department,
-                            color: GameScreen.getStreakIconColor(
-                              GameScreen.streak,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              GameScreen.streak.toString(),
+                              style: Theme.of(context).textTheme.bodyMedium,
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          ...GameScreen.errors.map(
-                            (err) => Icon(
-                              Icons.close,
-                              color: err ? Colors.red : Colors.grey,
-                              size: 35,
+                            Icon(
+                              Icons.local_fire_department,
+                              color: GameScreen.getStreakIconColor(
+                                GameScreen.streak,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Text(GameScreen.score.toString()),
-                          Icon(Icons.star, color: Colors.yellow),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            ...GameScreen.errors.map(
+                              (err) => Icon(
+                                Icons.close,
+                                color: err ? Colors.red : Colors.grey,
+                                size: 35,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(GameScreen.score.toString()),
+                            Icon(Icons.star, color: Colors.yellow),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                // Question text based on type with icon
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  // Question text based on type with icon
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 8,
+                      children: [
+                        Icon(
+                          _getQuestionIcon(question!),
+                          color: _getQuestionColor(question!),
+                          size: 28,
+                        ),
+                        Flexible(
+                          child: Text(
+                            _getQuestionText(question!),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: _getQuestionColor(question!),
+                                ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.visible,
+                            softWrap: true,
+                          ),
+                        ),
+                        Icon(
+                          _getQuestionIcon(question!),
+                          color: _getQuestionColor(question!),
+                          size: 28,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Show image or text for text-based questions
+                  question!.imageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: question!.imageUrl,
+                          height: 200,
+                          placeholder: (context, url) => const SizedBox(
+                            height: 200,
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                          errorWidget: (context, url, error) => const SizedBox(
+                            height: 200,
+                            child: Center(child: Icon(Icons.error, size: 50)),
+                          ),
+                        )
+                      : Container(
+                          height: 200,
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _getCenterContent(question!),
+                        ),
+                  Column(
                     spacing: 8,
                     children: [
-                      Icon(
-                        _getQuestionIcon(question!),
-                        color: _getQuestionColor(question!),
-                        size: 28,
-                      ),
-                      Flexible(
-                        child: Text(
-                          _getQuestionText(question!),
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: _getQuestionColor(question!),
+                      ...question!.alternatives.entries.map((alternative) {
+                        final buttonColor = _getButtonColor(alternative.key);
+                        final borderColor = _getButtonBorderColor(
+                          alternative.key,
+                        );
+
+                        return Container(
+                          width: 280,
+                          constraints: const BoxConstraints(minHeight: 50),
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: borderColor!,
+                                width: buttonColor != null ? 3 : 1,
+                              ),
+                              backgroundColor: buttonColor?.withValues(
+                                alpha: 0.2,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: answerSelected
+                                ? null
+                                : () => _handleAnswerSelection(
+                                    alternative.key,
+                                    alternative.value,
+                                  ),
+                            child: _buildAlternativeContent(
+                              alternative.key,
+                              buttonColor,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.visible,
-                          softWrap: true,
-                        ),
-                      ),
-                      Icon(
-                        _getQuestionIcon(question!),
-                        color: _getQuestionColor(question!),
-                        size: 28,
-                      ),
+                        );
+                      }),
                     ],
                   ),
-                ),
-                // Show image or text for text-based questions
-                question!.imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: question!.imageUrl,
-                        height: 200,
-                        placeholder: (context, url) => const SizedBox(
-                          height: 200,
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                        errorWidget: (context, url, error) => const SizedBox(
-                          height: 200,
-                          child: Center(child: Icon(Icons.error, size: 50)),
-                        ),
-                      )
-                    : Container(
-                        height: 200,
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _getCenterContent(question!),
-                      ),
-                Column(
-                  spacing: 8,
-                  children: [
-                    ...question!.alternatives.entries.map((alternative) {
-                      final buttonColor = _getButtonColor(alternative.key);
-                      final borderColor = _getButtonBorderColor(
-                        alternative.key,
-                      );
-
-                      return Container(
-                        width: 280,
-                        constraints: const BoxConstraints(
-                          minHeight: 50,
-                        ),
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                              color: borderColor!,
-                              width: buttonColor != null ? 3 : 1,
-                            ),
-                            backgroundColor: buttonColor?.withValues(alpha: 0.2),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: answerSelected
-                              ? null
-                              : () => _handleAnswerSelection(
-                                  alternative.key,
-                                  alternative.value,
-                                ),
-                          child: _buildAlternativeContent(
-                            alternative.key,
-                            buttonColor,
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ],
+                ],
               ),
             ),
           ),
