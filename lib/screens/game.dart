@@ -261,45 +261,54 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            alternativeKey,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: buttonColor,
-              fontWeight: buttonColor != null
-                  ? FontWeight.bold
-                  : FontWeight.normal,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              alternativeKey,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: buttonColor,
+                fontWeight: buttonColor != null
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
-          Text(
-            metadata,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: buttonColor ?? Colors.grey.shade600,
-              fontSize: 9,
-              fontWeight: FontWeight.w400,
-              height: 1.0,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              metadata,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: buttonColor ?? Colors.grey.shade600,
+                fontSize: 9,
+                fontWeight: FontWeight.w400,
+                height: 1.0,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       );
     }
 
     // Default: just the country name
-    return Text(
-      alternativeKey,
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-        color: buttonColor,
-        fontWeight: buttonColor != null ? FontWeight.bold : FontWeight.normal,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        alternativeKey,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: buttonColor,
+          fontWeight: buttonColor != null ? FontWeight.bold : FontWeight.normal,
+        ),
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
-      textAlign: TextAlign.center,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
     );
   }
 
