@@ -268,8 +268,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               fontWeight: buttonColor != null
                   ? FontWeight.bold
                   : FontWeight.normal,
-              fontSize: 13,
-              height: 1.1,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -298,7 +296,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
         color: buttonColor,
         fontWeight: buttonColor != null ? FontWeight.bold : FontWeight.normal,
-        fontSize: 15,
       ),
       textAlign: TextAlign.center,
       maxLines: 2,
@@ -517,7 +514,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
                         return Container(
                           width: 280,
-                          constraints: const BoxConstraints(minHeight: 50),
+                          constraints: const BoxConstraints(minHeight: 60),
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
