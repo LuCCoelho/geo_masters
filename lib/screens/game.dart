@@ -174,7 +174,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         final hint = question.hint ?? 'this country';
         return "What's the capital of $hint?";
       case QuestionType.capitalReverse:
-        return 'This is the capital of?';
+        return 'This is the capital of which country?';
       case QuestionType.populationComparison:
         return 'Which is the most populous?';
       case QuestionType.sizeComparison:
