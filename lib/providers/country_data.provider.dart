@@ -8,7 +8,7 @@ Future<List<Map<String, dynamic>>> countryData(Ref ref) async {
   final supabase = ref.watch(supabaseProvider);
 
   // Fetch country data from Supabase
-  final response = await supabase.from('countries').select();
+  final response = await supabase.from('countries_v2').select();
 
   return List<Map<String, dynamic>>.from(response);
 }

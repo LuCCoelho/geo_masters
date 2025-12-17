@@ -94,7 +94,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     }
 
     // Wait a moment to show the color feedback, then move to next question
-    Future.delayed(Duration(milliseconds: 600), () {
+    // Longer delay for comparison questions to allow reading the metadata
+    final isComparison = question!.type == QuestionType.populationComparison ||
+        question!.type == QuestionType.sizeComparison;
+    final delayMilliseconds = isComparison ? 2500 : 600;
+    
+    Future.delayed(Duration(milliseconds: delayMilliseconds), () {
       if (!mounted) return;
 
       if (GameScreen.errorsCount == 3) {
@@ -156,6 +161,143 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
         : Colors.black;
+  }
+
+  String _getQuestionText(Question question) {
+    switch (question.type) {
+      case QuestionType.flag:
+        return 'Which country\'s flag?';
+      case QuestionType.shape:
+        return 'What country is this?';
+      case QuestionType.capital:
+        final hint = question.hint ?? 'this country';
+        return 'Capital of $hint?';
+      case QuestionType.capitalReverse:
+        return 'This is the capital of?';
+      case QuestionType.populationComparison:
+        return 'Which is the most populous?';
+      case QuestionType.sizeComparison:
+        return 'Which is the biggest?';
+    }
+  }
+
+  IconData _getQuestionIcon(Question question) {
+    switch (question.type) {
+      case QuestionType.flag:
+        return Icons.flag;
+      case QuestionType.shape:
+        return Icons.public;
+      case QuestionType.capital:
+        return Icons.location_city;
+      case QuestionType.capitalReverse:
+        return Icons.apartment;
+      case QuestionType.populationComparison:
+        return Icons.people;
+      case QuestionType.sizeComparison:
+        return Icons.straighten;
+    }
+  }
+
+  Color _getQuestionColor(Question question) {
+    switch (question.type) {
+      case QuestionType.flag:
+        return Colors.blue;
+      case QuestionType.shape:
+        return Colors.green;
+      case QuestionType.capital:
+        return Colors.orange;
+      case QuestionType.capitalReverse:
+        return Colors.purple;
+      case QuestionType.populationComparison:
+        return Colors.red;
+      case QuestionType.sizeComparison:
+        return Colors.teal;
+    }
+  }
+
+  Widget _getCenterContent(Question question) {
+    // For reverse capital questions, show the capital name
+    if (question.type == QuestionType.capitalReverse) {
+      return Text(
+        question.hint ?? '',
+        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: _getQuestionColor(question),
+        ),
+        textAlign: TextAlign.center,
+      );
+    }
+    
+    // For comparison questions, show an icon
+    if (question.type == QuestionType.populationComparison ||
+        question.type == QuestionType.sizeComparison) {
+      return Icon(
+        _getQuestionIcon(question),
+        size: 120,
+        color: _getQuestionColor(question).withValues(alpha: 0.3),
+      );
+    }
+    
+    // Default: empty
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildAlternativeContent(String alternativeKey, Color? buttonColor) {
+    final isComparison = question!.type == QuestionType.populationComparison ||
+        question!.type == QuestionType.sizeComparison;
+    
+    // Show metadata only after answer is selected for comparison questions
+    String? metadata;
+    if (answerSelected && isComparison && question!.alternativesMetadata != null) {
+      metadata = question!.alternativesMetadata![alternativeKey];
+    }
+    
+    if (metadata != null) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            alternativeKey,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: buttonColor,
+              fontWeight: buttonColor != null ? FontWeight.bold : FontWeight.normal,
+              fontSize: 13,
+              height: 1.1,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            metadata,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: buttonColor ?? Colors.grey.shade600,
+              fontSize: 9,
+              fontWeight: FontWeight.w400,
+              height: 1.0,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
+    }
+    
+    // Default: just the country name
+    return Text(
+      alternativeKey,
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        color: buttonColor,
+        fontWeight: buttonColor != null ? FontWeight.bold : FontWeight.normal,
+        fontSize: 15,
+      ),
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   @override
@@ -259,11 +401,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             'Question ${GameScreen.questionNumber}',
             ref,
           ),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 40,
-              children: [
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 25,
+                children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 50),
                   child: Row(
@@ -303,20 +447,60 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     ],
                   ),
                 ),
-                CachedNetworkImage(
-                  imageUrl: question!.imageUrl,
-                  height: 200,
-                  placeholder: (context, url) => const SizedBox(
-                    height: 200,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => const SizedBox(
-                    height: 200,
-                    child: Center(child: Icon(Icons.error, size: 50)),
+                // Question text based on type with icon
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 8,
+                    children: [
+                      Icon(
+                        _getQuestionIcon(question!),
+                        color: _getQuestionColor(question!),
+                        size: 28,
+                      ),
+                      Flexible(
+                        child: Text(
+                          _getQuestionText(question!),
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: _getQuestionColor(question!),
+                          ),
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.visible,
+                          softWrap: true,
+                        ),
+                      ),
+                      Icon(
+                        _getQuestionIcon(question!),
+                        color: _getQuestionColor(question!),
+                        size: 28,
+                      ),
+                    ],
                   ),
                 ),
+                // Show image or text for text-based questions
+                question!.imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: question!.imageUrl,
+                        height: 200,
+                        placeholder: (context, url) => const SizedBox(
+                          height: 200,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        errorWidget: (context, url, error) => const SizedBox(
+                          height: 200,
+                          child: Center(child: Icon(Icons.error, size: 50)),
+                        ),
+                      )
+                    : Container(
+                        height: 200,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _getCenterContent(question!),
+                      ),
                 Column(
-                  spacing: 10,
+                  spacing: 8,
                   children: [
                     ...question!.alternatives.entries.map((alternative) {
                       final buttonColor = _getButtonColor(alternative.key);
@@ -324,32 +508,30 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                         alternative.key,
                       );
 
-                      return OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: borderColor!,
-                            width: buttonColor != null ? 3 : 1,
-                          ),
-                          backgroundColor: buttonColor?.withValues(alpha: 0.2),
-                          fixedSize: Size(200, 50),
+                      return Container(
+                        width: 280,
+                        constraints: const BoxConstraints(
+                          minHeight: 50,
                         ),
-                        onPressed: answerSelected
-                            ? null
-                            : () => _handleAnswerSelection(
-                                alternative.key,
-                                alternative.value,
-                              ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            alternative.key,
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(
-                                  color: buttonColor,
-                                  fontWeight: buttonColor != null
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: borderColor!,
+                              width: buttonColor != null ? 3 : 1,
+                            ),
+                            backgroundColor: buttonColor?.withValues(alpha: 0.2),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: answerSelected
+                              ? null
+                              : () => _handleAnswerSelection(
+                                  alternative.key,
+                                  alternative.value,
                                 ),
+                          child: _buildAlternativeContent(
+                            alternative.key,
+                            buttonColor,
                           ),
                         ),
                       );
@@ -357,6 +539,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   ],
                 ),
               ],
+              ),
             ),
           ),
         );
