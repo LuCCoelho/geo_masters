@@ -5,7 +5,7 @@ import '../widgets/app_bar.dart';
 import '../providers/profile.provider.dart';
 import '../screens/game.dart';
 import '../screens/leaderboard.dart';
-import '../screens/friends_room.dart';
+// import '../screens/friends_room.dart';
 
 class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({

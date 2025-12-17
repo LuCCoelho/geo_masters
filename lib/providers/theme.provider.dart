@@ -11,6 +11,13 @@ class AppTheme extends _$AppTheme {
   }
 
   void toggleTheme() {
-    state = (state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light);
+    if (state == ThemeMode.system) {
+      // When starting from system mode, switch to dark mode
+      state = ThemeMode.dark;
+    } else if (state == ThemeMode.light) {
+      state = ThemeMode.dark;
+    } else {
+      state = ThemeMode.light;
+    }
   }
 }

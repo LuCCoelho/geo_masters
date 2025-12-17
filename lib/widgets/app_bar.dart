@@ -10,7 +10,14 @@ AppBar getAppBar(
   WidgetRef ref, {
   bool showDropdown = false,
 }) {
+  // Watch the theme provider to ensure the icon updates when theme changes
+  final themeMode = ref.watch(appThemeProvider);
   final brightness = Theme.of(context).brightness;
+
+  // Determine the effective brightness based on theme mode
+  final effectiveBrightness = themeMode == ThemeMode.system
+      ? brightness
+      : (themeMode == ThemeMode.light ? Brightness.light : Brightness.dark);
 
   return AppBar(
     backgroundColor: Theme.of(context).primaryColor,
@@ -19,7 +26,7 @@ AppBar getAppBar(
       onPressed: () {
         ref.read(appThemeProvider.notifier).toggleTheme();
       },
-      icon: brightness == Brightness.light
+      icon: effectiveBrightness == Brightness.light
           ? const Icon(Icons.light_mode)
           : const Icon(Icons.dark_mode),
     ),
