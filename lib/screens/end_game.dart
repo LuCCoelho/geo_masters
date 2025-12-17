@@ -4,9 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'game.dart';
 import 'home.dart';
 import '../widgets/app_bar.dart';
-import '../providers/highest_score.provider.dart';
-import '../providers/highest_streak.provider.dart';
 import '../providers/country_data.provider.dart';
+import '../providers/profile.provider.dart';
 
 class EndGameScreen extends ConsumerStatefulWidget {
   const EndGameScreen({
@@ -40,18 +39,12 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
     if (_hasUpdatedProviders) return;
     _hasUpdatedProviders = true;
 
-    final highestScoreAsync = ref.read(highestScoreProvider);
-    final currentHighestScore = highestScoreAsync.value ?? 0;
-
-    // Check before updating
-    _isNewHighestScore = widget.score > currentHighestScore;
-
     // Update providers
     await ref
-        .read(highestScoreProvider.notifier)
+        .read(profileDataProvider.notifier)
         .updateHighestScore(widget.score);
     await ref
-        .read(highestStreakProvider.notifier)
+        .read(profileDataProvider.notifier)
         .updateHighestStreak(widget.currentGameHighestStreak);
   }
 
@@ -65,12 +58,17 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
     GameScreen.errorsCount = 0;
     GameScreen.questionNumber = 1;
 
-    final highestScoreAsync = ref.watch(highestScoreProvider);
-    final currentHighestScore = highestScoreAsync.value ?? 0;
+    // Determine if this is a new highest score on first build
+    // Use ref.read to get current value without watching (to avoid rebuilds)
+    if (_isNewHighestScore == null) {
+      final profileDataAsync = ref.read(profileDataProvider);
+      final currentHighestScore =
+          profileDataAsync.value?['highest_score'] as int? ?? 0;
+      _isNewHighestScore = widget.score > currentHighestScore;
+    }
 
-    // Use stored value if available, otherwise check current provider state
-    final isNewHighestScore =
-        _isNewHighestScore ?? (widget.score > currentHighestScore);
+    // Use stored value - it's set once and never changes
+    final isNewHighestScore = _isNewHighestScore!;
 
     return Scaffold(
       appBar: getAppBar(context, widget.title, ref),
