@@ -142,24 +142,24 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
               icon: Icon(FontAwesomeIcons.trophy, color: Colors.amber),
             ),
           ),
-          Positioned(
-            top: 20,
-            left: 10,
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FriendsRoomScreen(),
-                  ),
-                );
-              },
-              icon: Icon(
-                FontAwesomeIcons.users,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-          ),
+          // Positioned(
+          //   top: 20,
+          //   left: 10,
+          //   child: IconButton(
+          //     onPressed: () {
+          //       Navigator.push(
+          //         context,
+          //         MaterialPageRoute(
+          //           builder: (context) => const FriendsRoomScreen(),
+          //         ),
+          //       );
+          //     },
+          //     icon: Icon(
+          //       FontAwesomeIcons.users,
+          //       color: Theme.of(context).primaryColor,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
